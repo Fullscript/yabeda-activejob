@@ -25,4 +25,4 @@ jobs:
           gem install rubocop
       - name: Lint Ruby code with RuboCop
         run: |
-          bundle exec rubocop
+          rubocop
