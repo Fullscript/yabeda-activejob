@@ -22,7 +22,7 @@ jobs:
           bundler-cache: true
       - name: Install Rubocop
         run: |
-          gem install rubocop
+          gem install rubocop -v 1.37.0
       - name: Lint Ruby code with RuboCop
         run: |
           rubocop
