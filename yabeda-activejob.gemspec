@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.description              = "Prometheus exporter for collecting metrics around your activejobs"
   spec.homepage                 = "https://github.com/Fullscript/yabeda-activejob"
   spec.license                  = "MIT"
-  spec.required_ruby_version    = ">= 2.7.3"
+  spec.required_ruby_version    = ">= 2.5"
   spec.files                    = Dir["{app,config,db,lib}/**/*", "MIT-LICENSE", "Rakefile", "README.md"]
 
   spec.metadata["homepage_uri"]          = spec.homepage
