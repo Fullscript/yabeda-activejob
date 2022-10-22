@@ -20,6 +20,9 @@ jobs:
         with:
           ruby-version: "3.1"
           bundler-cache: true
+      - name: Install Rubocop
+        run: |
+          gem install rubocop
       - name: Lint Ruby code with RuboCop
         run: |
           bundle exec rubocop
