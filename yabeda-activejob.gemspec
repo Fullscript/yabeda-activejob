@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.metadata["changelog_uri"]         = "#{spec.homepage}/CHANGELOG.md"
   spec.metadata["rubygems_mfa_required"] = "true"
 
-  spec.add_dependency "rails", ">= 4.2"
+  spec.add_dependency "rails", ">= 5.2"
   spec.add_dependency "yabeda", "~> 0.6"
 
   spec.add_development_dependency "bundler", "~> 2.0"

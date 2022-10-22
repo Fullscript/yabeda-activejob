@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     yabeda-activejob (0.1.0)
-      rails (>= 4.2)
+      rails (>= 5.2)
       yabeda (~> 0.6)
 
 GEM
