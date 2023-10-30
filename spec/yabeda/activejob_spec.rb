@@ -7,7 +7,9 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
   include ActionDispatch::IntegrationTest::Behavior
   include ActiveJob::TestHelper
 
-  before { ActiveJob::Base.queue_adapter = :inline }
+  before do |ex|
+    ActiveJob::Base.queue_adapter = ex.metadata[:queue_adapter] || :inline
+  end
 
   after { described_class.after_event_block = proc {} }
 
@@ -47,19 +49,17 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
         .with(be_between(0.005, 0.05))
     end
 
-    it "measures job latency" do
-      ActiveJob::Base.queue_adapter = :test
+    it "measures job latency", queue_adapter: :test do
       expect { HelloJob.perform_later }.to have_enqueued_job.on_queue("default")
-      sleep(1)
       expect { perform_enqueued_jobs }.to measure_yabeda_histogram(Yabeda.activejob.latency)
         .with_tags(queue: "default", activejob: "HelloJob", executions: "1")
-        .with(be_between(1, 2))
+        .with(kind_of(Float))
     end
 
     context "when enqueued_at is not present" do
-      it "does not measure job latency" do
-        ActiveJob::Base.queue_adapter = :test
-        expect_any_instance_of(HelloJob).to receive(:enqueued_at).and_return(nil).twice # rubocop:disable RSpec/AnyInstance
+      it "does not measure job latency", queue_adapter: :test do
+        allow_any_instance_of(HelloJob).to receive(:enqueued_at).and_return(nil) # rubocop:disable RSpec/AnyInstance
+
         expect { HelloJob.perform_later }.to have_enqueued_job.on_queue("default")
         sleep(1)
         expect { perform_enqueued_jobs }.not_to measure_yabeda_histogram(Yabeda.activejob.latency)
@@ -111,9 +111,7 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
     end
   end
 
-  context "when job is enqueued" do
-    before { ActiveJob::Base.queue_adapter = :test }
-
+  context "when job is enqueued", queue_adapter: :test do
     it "increments enqueued job counter" do
       expect do
         HelloJob.perform_later

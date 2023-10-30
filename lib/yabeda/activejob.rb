@@ -96,7 +96,7 @@ module Yabeda
       enqueue_time = event.payload[:job].enqueued_at
       return nil unless enqueue_time.present?
 
-      enqueue_time = Time.parse(enqueue_time).utc
+      enqueue_time = Time.parse(enqueue_time).utc unless enqueue_time.is_a?(Time)
       perform_at_time = Time.parse(event.end.to_s).utc
       (perform_at_time - enqueue_time)
     end
