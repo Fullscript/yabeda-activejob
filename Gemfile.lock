@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    yabeda-activejob (0.4.0)
+    yabeda-activejob (0.5.1)
       rails (>= 5.2)
       yabeda (~> 0.6)
 
