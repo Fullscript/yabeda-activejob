@@ -97,7 +97,13 @@ module Yabeda
       return nil unless enqueue_time.present?
 
       enqueue_time = Time.parse(enqueue_time).utc unless enqueue_time.is_a?(Time)
-      perform_at_time = Time.parse(event.end.to_s).utc
+
+      end_time_in_seconds = if event.end > 1e12
+        ms2s(event.end)
+      else
+        event.end
+      end
+      perform_at_time = Time.at(end_time_in_seconds).utc
       (perform_at_time - enqueue_time)
     end
 
