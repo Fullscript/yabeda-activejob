@@ -186,6 +186,8 @@ GEM
       unicode-display_width (>= 2.4.0, < 3.0)
     rubocop-ast (1.32.3)
       parser (>= 3.3.1.0)
+    rubocop-rspec (3.2.0)
+      rubocop (~> 1.61)
     ruby-next-core (1.0.3)
     ruby-progressbar (1.13.0)
     simplecov (0.21.2)
@@ -219,6 +221,7 @@ DEPENDENCIES
   rspec (~> 3.0)
   rspec-rails (~> 6.0)
   rubocop (~> 1.67)
+  rubocop-rspec (~> 3.2)
   simplecov (~> 0.21)
   yabeda-activejob!
 

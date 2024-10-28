@@ -25,7 +25,6 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
       random_double = double
       allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
       described_class.after_event_block = proc { |event| random_double.hello(event) }
-      proc { |event| random_double.hello(event) }
       HelloJob.perform_later
 
       expect(random_double).to have_received(:hello).exactly(3).times
@@ -103,7 +102,6 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
       random_double = double
       allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
       described_class.after_event_block = proc { |event| random_double.hello(event) }
-      proc { |event| random_double.hello(event) }
 
       expect { ErrorLongJob.perform_later }.to raise_error(StandardError)
 
@@ -126,7 +124,6 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
       random_double = double
       allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
       described_class.after_event_block = proc { |event| random_double.hello(event) }
-      proc { |event| random_double.hello(event) }
 
       HelloJob.perform_later
 

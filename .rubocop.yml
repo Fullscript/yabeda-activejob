@@ -3,7 +3,7 @@ require:
 - rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 2.5
+  TargetRubyVersion: 3.0
   NewCops: enable
 
 Metrics/BlockLength:
@@ -18,7 +18,7 @@ Style/StringLiterals:
 RSpec/LetSetup:
   Enabled: false
 
-RSpec/FilePath:
+RSpec/SpecFilePathFormat:
   Enabled: false
 
 RSpec/ExampleLength:
