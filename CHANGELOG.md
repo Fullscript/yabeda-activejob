@@ -1,5 +1,5 @@
 ## 0.5.0 - 2023-11-01
-- Add support for rails 7.1 Shout out to @bronislav for getting this done!! 
+- Add support for rails 7.1 Shout out to @bronislav for getting this done!!
 
 ## 0.4.0 - 20220-11-04
 
