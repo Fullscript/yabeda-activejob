@@ -1,5 +1,5 @@
 ## 0.6.0 - 2024-10-29
-- Add support for Rails 7.1.4+
+- Add support for Rails 7.1.4+ and 7.2
 - Fix rubocop rules and configure Github actions to run the specs for supported Rails / Ruby versions.
 - Remove support for end of life versions of Ruby and Rails.
 
