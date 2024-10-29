@@ -55,7 +55,7 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
         .with(kind_of(Float))
     end
 
-    context "#job_latency" do
+    describe "#job_latency" do
       # Rails 7.1.4 and above
       it "returns the correct latency from end_time in seconds" do
         start_time = Time.now
@@ -66,11 +66,11 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
           nil,
           nil,
           1,
-          { job: job }
+          { job: job },
         )
         end_time_in_s = 1.minute.from_now(start_time).to_f
         allow(event).to receive(:end).and_return(end_time_in_s)
-        
+
         expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
       end
 
@@ -84,7 +84,7 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
           nil,
           nil,
           1,
-          { job: job }
+          { job: job },
         )
         end_time_in_ms = 1.minute.from_now(start_time).to_f * 1000
         allow(event).to receive(:end).and_return(end_time_in_ms)
