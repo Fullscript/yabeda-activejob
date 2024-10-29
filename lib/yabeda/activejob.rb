@@ -96,19 +96,27 @@ module Yabeda
       enqueue_time = event.payload[:job].enqueued_at
       return nil unless enqueue_time.present?
 
-      enqueue_time = Time.parse(enqueue_time).utc unless enqueue_time.is_a?(Time)
+      enqueue_time = parse_event_time(enqueue_time)
+      perform_at_time = parse_event_time(event.end)
 
-      end_time_in_seconds = if event.end > 1e12
-        ms2s(event.end)
-      else
-        event.end
-      end
-      perform_at_time = Time.at(end_time_in_seconds).utc
-      (perform_at_time - enqueue_time)
+      perform_at_time - enqueue_time
     end
 
     def self.ms2s(milliseconds)
       (milliseconds.to_f / 1000).round(3)
+    end
+
+    def self.parse_event_time(time)
+      case time
+      when Time   then time
+      when String then Time.parse(time).utc
+      else
+        if time > 1e12
+          Time.at(ms2s(time)).utc
+        else
+          Time.parse(time).utc
+        end
+      end
     end
   end
 end
