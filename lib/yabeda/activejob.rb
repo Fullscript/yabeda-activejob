@@ -114,7 +114,7 @@ module Yabeda
         if time > 1e12
           Time.at(ms2s(time)).utc
         else
-          Time.parse(time).utc
+          Time.at(time).utc
         end
       end
     end

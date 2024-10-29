@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    yabeda-activejob (0.6.0)
+    yabeda-activejob (0.5.1)
       rails (>= 6.1)
       yabeda (~> 0.6)
 
@@ -107,12 +107,11 @@ GEM
       date
       net-protocol
     net-pop (0.1.2)
-      net-protocol
     net-protocol (0.2.2)
       timeout
     net-smtp (0.5.0)
       net-protocol
-    nio4r (2.7.3)
+    nio4r (2.7.4)
     nokogiri (1.13.9)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
