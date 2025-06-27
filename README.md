@@ -33,13 +33,12 @@ Sidekiq.configure_server do |_config|
 end
 ```
 
-If using with resque:
+If using with solid_queue or resque:
 ```ruby
 # config/initializers/yabeda.rb or elsewhere
 Yabeda::ActiveJob.install!
 ```
-If using resque you may need to use [yabeda-prometheus-mmap](https://github.com/yabeda-rb/yabeda-prometheus-mmap) or set your storage type to direct file store so that the metrics are available
-to your collector. 
+If using solid_queue or resque you need to use [yabeda-prometheus-mmap](https://github.com/yabeda-rb/yabeda-prometheus-mmap) or set your storage type to direct file store so that the metrics are available to your collector. 
 
 To set your storage type to direct file store you can do the following in your yabeda initializer: 
 
