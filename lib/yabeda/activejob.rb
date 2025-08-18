@@ -33,7 +33,7 @@ module Yabeda
                             tags: %i[queue activejob executions],
                             buckets: LONG_RUNNING_JOB_RUNTIME_BUCKETS
 
-        histogram :latency, comment: "The job latency, the difference in seconds between enqueued and running time",
+        histogram :latency, comment: "The job latency, the difference in seconds between scheduled and running time",
                             unit: :seconds, per: :activejob,
                             tags: %i[queue activejob executions],
                             buckets: LONG_RUNNING_JOB_RUNTIME_BUCKETS
@@ -93,13 +93,13 @@ module Yabeda
     # rubocop: enable Metrics/MethodLength, Metrics/BlockLength, Metrics/AbcSize
 
     def self.job_latency(event)
-      enqueue_time = event.payload[:job].enqueued_at
-      return nil unless enqueue_time.present?
+      scheduled_time = event.payload[:job].scheduled_at || event.payload[:job].enqueued_at
+      return nil unless scheduled_time.present?
 
-      enqueue_time = parse_event_time(enqueue_time)
+      scheduled_time = parse_event_time(scheduled_time)
       perform_at_time = parse_event_time(event.end)
 
-      perform_at_time - enqueue_time
+      perform_at_time - scheduled_time
     end
 
     def self.ms2s(milliseconds)
