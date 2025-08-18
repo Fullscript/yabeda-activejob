@@ -68,13 +68,14 @@ module Yabeda
 
       attr_reader :event
 
-      def job_latency
-        return unless (enqueue_time = event.payload[:job].enqueued_at)
+      def self.job_latency(event)
+        scheduled_time = event.payload[:job].scheduled_at || event.payload[:job].enqueued_at
+        return nil unless scheduled_time.present?
 
-        enqueue_time = parse_event_time(enqueue_time)
+        scheduled_time = parse_event_time(scheduled_time)
         perform_at_time = parse_event_time(event.end)
 
-        perform_at_time - enqueue_time
+        perform_at_time - scheduled_time
       end
 
       def ms2s(milliseconds)

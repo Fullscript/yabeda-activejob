@@ -36,7 +36,7 @@ module Yabeda
                             tags: %i[queue activejob executions],
                             buckets: LONG_RUNNING_JOB_RUNTIME_BUCKETS
 
-        histogram :latency, comment: "The job latency, the difference in seconds between enqueued and running time",
+        histogram :latency, comment: "The job latency, the difference in seconds between scheduled and running time",
                             unit: :seconds, per: :activejob,
                             tags: %i[queue activejob executions],
                             buckets: LONG_RUNNING_JOB_RUNTIME_BUCKETS
