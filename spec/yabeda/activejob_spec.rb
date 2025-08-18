@@ -57,10 +57,10 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
 
     describe "#job_latency" do
       # Rails 7.1.4 and above
-      it "returns the correct latency from end_time in seconds" do
-        start_time = Time.now
+      it "returns the correct latency from end_time in seconds for job without a wait time" do
+        enqueued_time = Time.now
         job = HelloJob.new
-        job.enqueued_at = start_time
+        job.enqueued_at = enqueued_time
         event = ActiveSupport::Notifications::Event.new(
           "perform_start.active_job",
           nil,
@@ -68,17 +68,38 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
           1,
           { job: job },
         )
-        end_time_in_s = 1.minute.from_now(start_time).to_f
+        end_time_in_s = 1.minute.from_now(enqueued_time).to_f
+        allow(event).to receive(:end).and_return(end_time_in_s)
+
+        expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
+      end
+
+      # Rails 7.1.4 and above
+      it "returns the correct latency from end_time in seconds for job with wait time" do
+        enqueued_time = Time.now
+        wait = 1.minute
+        scheduled_time = enqueued_time + wait
+        job = HelloJob.new
+        job.enqueued_at = enqueued_time
+        job.scheduled_at = scheduled_time
+        event = ActiveSupport::Notifications::Event.new(
+          "perform_start.active_job",
+          nil,
+          nil,
+          1,
+          { job: job },
+        )
+        end_time_in_s = 1.minute.from_now(scheduled_time).to_f
         allow(event).to receive(:end).and_return(end_time_in_s)
 
         expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
       end
 
       # Rails 7.1.3 and below
-      it "returns the correct latency from end_time in milliseconds" do
-        start_time = Time.now
+      it "returns the correct latency from end_time in milliseconds for job without a wait time" do
+        enqueued_time = Time.now
         job = HelloJob.new
-        job.enqueued_at = start_time
+        job.enqueued_at = enqueued_time
         event = ActiveSupport::Notifications::Event.new(
           "perform_start.active_job",
           nil,
@@ -86,7 +107,28 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
           1,
           { job: job },
         )
-        end_time_in_ms = 1.minute.from_now(start_time).to_f * 1000
+        end_time_in_ms = 1.minute.from_now(enqueued_time).to_f * 1000
+        allow(event).to receive(:end).and_return(end_time_in_ms)
+
+        expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
+      end
+
+      # Rails 7.1.3 and below
+      it "returns the correct latency from end_time in milliseconds for job with a wait time" do
+        enqueued_time = Time.now
+        wait = 1.minute
+        scheduled_time = enqueued_time + wait
+        job = HelloJob.new
+        job.enqueued_at = enqueued_time
+        job.scheduled_at = scheduled_time
+        event = ActiveSupport::Notifications::Event.new(
+          "perform_start.active_job",
+          nil,
+          nil,
+          1,
+          { job: job },
+        )
+        end_time_in_ms = 1.minute.from_now(scheduled_time).to_f * 1000
         allow(event).to receive(:end).and_return(end_time_in_ms)
 
         expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
