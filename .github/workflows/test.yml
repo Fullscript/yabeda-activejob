@@ -25,8 +25,8 @@ jobs:
         CI: true
         BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails }}.gemfile
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: bundle-${{ matrix.ruby }}-${{ hashFiles('**/*.gemspec') }}-${{ hashFiles(format('**/gemfiles/rails_{0}.gemfile', matrix.rails)) }}
