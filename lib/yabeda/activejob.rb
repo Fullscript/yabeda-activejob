@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
+require "active_support"
 require "yabeda"
 require "yabeda/activejob/version"
-require "active_support"
 
 module Yabeda
   # Small set of metrics on activejob jobs
