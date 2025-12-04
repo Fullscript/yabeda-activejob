@@ -197,7 +197,7 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
     end
   end
 
-  context "when jobs are bulk enqueued", skip: !ActiveJob.respond_to?(:perform_all_later), queue_adapter: :test do
+  context "when jobs are bulk enqueued", queue_adapter: :test, skip: !ActiveJob.respond_to?(:perform_all_later) do
     it "increments enqueued job counter for all jobs" do
       expect do
         ActiveJob.perform_all_later([HelloJob.new, HelloJob.new, LongJob.new])
@@ -213,10 +213,10 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
     it "increments scheduled job counter for scheduled jobs in bulk" do
       expect do
         ActiveJob.perform_all_later([
-          HelloJob.new.set(wait: 1.hour),
-          HelloJob.new,
-          LongJob.new.set(wait: 2.hours),
-        ])
+                                      HelloJob.new.set(wait: 1.hour),
+                                      HelloJob.new,
+                                      LongJob.new.set(wait: 2.hours),
+                                    ])
       end.to increment_yabeda_counter(Yabeda.activejob.scheduled_total)
         .with_tags(queue: "default", activejob: "HelloJob", executions: "0")
         .by(1).and(
