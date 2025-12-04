@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
   spec.metadata["source_code_uri"]       = spec.homepage
   spec.metadata["changelog_uri"]         = "#{spec.homepage}/CHANGELOG.md"
 
-  spec.add_dependency "rails", ">= 6.1"
+  spec.add_dependency "activesupport", ">= 6.1"
+  spec.add_dependency "activejob", ">= 6.1"
   spec.add_dependency "yabeda", "~> 0.6"
 end
