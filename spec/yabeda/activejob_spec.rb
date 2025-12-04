@@ -23,11 +23,11 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
 
     it "runs the after_event_block successfully" do
       random_double = double
-      allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
+      allow(random_double).to receive(:hello)
       described_class.after_event_block = proc { |event| random_double.hello(event) }
       HelloJob.perform_later
 
-      expect(random_double).to have_received(:hello).exactly(3).times
+      expect(random_double).to have_received(:hello).with(an_instance_of(ActiveSupport::Notifications::Event)).exactly(3).times
     end
 
     it "does not increment failed job counter" do
@@ -55,41 +55,31 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
         .with(kind_of(Float))
     end
 
-    describe "#job_latency" do
+    describe "job latency calculation" do
       # Rails 7.1.4 and above
-      it "returns the correct latency from end_time in seconds" do
+      it "measures correct latency from end_time in seconds", queue_adapter: :test do
         start_time = Time.now
-        job = HelloJob.new
-        job.enqueued_at = start_time
-        event = ActiveSupport::Notifications::Event.new(
-          "perform_start.active_job",
-          nil,
-          nil,
-          1,
-          { job: job },
-        )
-        end_time_in_s = 1.minute.from_now(start_time).to_f
-        allow(event).to receive(:end).and_return(end_time_in_s)
 
-        expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
+        # Mock the event end time to simulate 60 seconds later
+        allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:end).and_return(1.minute.from_now(start_time).to_f) # rubocop:disable RSpec/AnyInstance
+
+        expect { HelloJob.perform_later }.to have_enqueued_job.on_queue("default")
+        expect { perform_enqueued_jobs }.to measure_yabeda_histogram(Yabeda.activejob.latency)
+          .with_tags(queue: "default", activejob: "HelloJob", executions: "1")
+          .with(be_within(0.1).of(60.0))
       end
 
       # Rails 7.1.3 and below
-      it "returns the correct latency from end_time in milliseconds" do
+      it "measures correct latency from end_time in milliseconds", queue_adapter: :test do
         start_time = Time.now
-        job = HelloJob.new
-        job.enqueued_at = start_time
-        event = ActiveSupport::Notifications::Event.new(
-          "perform_start.active_job",
-          nil,
-          nil,
-          1,
-          { job: job },
-        )
-        end_time_in_ms = 1.minute.from_now(start_time).to_f * 1000
-        allow(event).to receive(:end).and_return(end_time_in_ms)
 
-        expect(described_class.job_latency(event)).to be_within(0.1).of(60.0)
+        # Mock the event end time to simulate 60 seconds later (in milliseconds)
+        allow_any_instance_of(ActiveSupport::Notifications::Event).to receive(:end).and_return(1.minute.from_now(start_time).to_f * 1000) # rubocop:disable RSpec/AnyInstance
+
+        expect { HelloJob.perform_later }.to have_enqueued_job.on_queue("default")
+        expect { perform_enqueued_jobs }.to measure_yabeda_histogram(Yabeda.activejob.latency)
+          .with_tags(queue: "default", activejob: "HelloJob", executions: "1")
+          .with(be_within(0.1).of(60.0))
       end
     end
 
@@ -138,12 +128,12 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
 
     it "runs the after_event_block successfully" do
       random_double = double
-      allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
+      allow(random_double).to receive(:hello)
       described_class.after_event_block = proc { |event| random_double.hello(event) }
 
       expect { ErrorLongJob.perform_later }.to raise_error(StandardError)
 
-      expect(random_double).to have_received(:hello).exactly(3).times
+      expect(random_double).to have_received(:hello).with(an_instance_of(ActiveSupport::Notifications::Event)).exactly(3).times
     end
   end
 
@@ -158,14 +148,94 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
       )
     end
 
+    it "does not increment scheduled job counter for immediate jobs" do
+      expect do
+        HelloJob.perform_later
+      end.to have_enqueued_job.on_queue("default").and(
+        not_increment_yabeda_counter(Yabeda.activejob.scheduled_total),
+      )
+    end
+
     it "runs the after_event_block successfully" do
       random_double = double
-      allow(random_double).to receive(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
+      allow(random_double).to receive(:hello)
       described_class.after_event_block = proc { |event| random_double.hello(event) }
 
       HelloJob.perform_later
 
-      expect(random_double).to have_received(:hello)
+      expect(random_double).to have_received(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
+    end
+  end
+
+  context "when job is scheduled for future execution", queue_adapter: :test do
+    it "increments scheduled job counter" do
+      expect do
+        HelloJob.set(wait: 1.hour).perform_later
+      end.to have_enqueued_job.on_queue("default").and(
+        increment_yabeda_counter(Yabeda.activejob.scheduled_total)
+          .with_tags(queue: "default", activejob: "HelloJob", executions: "0")
+          .by(1),
+      )
+    end
+
+    it "does not increment enqueued job counter for scheduled jobs" do
+      expect do
+        HelloJob.set(wait: 1.hour).perform_later
+      end.to have_enqueued_job.on_queue("default").and(
+        not_increment_yabeda_counter(Yabeda.activejob.enqueued_total),
+      )
+    end
+
+    it "runs the after_event_block successfully" do
+      random_double = double
+      allow(random_double).to receive(:hello)
+      described_class.after_event_block = proc { |event| random_double.hello(event) }
+
+      HelloJob.set(wait: 1.hour).perform_later
+
+      expect(random_double).to have_received(:hello).with(an_instance_of(ActiveSupport::Notifications::Event))
+    end
+  end
+
+  context "when jobs are bulk enqueued", skip: !ActiveJob.respond_to?(:perform_all_later), queue_adapter: :test do
+    it "increments enqueued job counter for all jobs" do
+      expect do
+        ActiveJob.perform_all_later([HelloJob.new, HelloJob.new, LongJob.new])
+      end.to increment_yabeda_counter(Yabeda.activejob.enqueued_total)
+        .with_tags(queue: "default", activejob: "HelloJob", executions: "0")
+        .by(2).and(
+          increment_yabeda_counter(Yabeda.activejob.enqueued_total)
+            .with_tags(queue: "default", activejob: "LongJob", executions: "0")
+            .by(1),
+        )
+    end
+
+    it "increments scheduled job counter for scheduled jobs in bulk" do
+      expect do
+        ActiveJob.perform_all_later([
+          HelloJob.new.set(wait: 1.hour),
+          HelloJob.new,
+          LongJob.new.set(wait: 2.hours),
+        ])
+      end.to increment_yabeda_counter(Yabeda.activejob.scheduled_total)
+        .with_tags(queue: "default", activejob: "HelloJob", executions: "0")
+        .by(1).and(
+          increment_yabeda_counter(Yabeda.activejob.scheduled_total)
+            .with_tags(queue: "default", activejob: "LongJob", executions: "0")
+            .by(1),
+        ).and(
+          increment_yabeda_counter(Yabeda.activejob.enqueued_total)
+            .with_tags(queue: "default", activejob: "HelloJob", executions: "0")
+            .by(1),
+        )
+    end
+
+    it "does not increment scheduled counter for non-scheduled jobs in bulk" do
+      jobs_count = Yabeda.activejob.scheduled_total.values.values.sum
+
+      ActiveJob.perform_all_later([HelloJob.new, HelloJob.new, LongJob.new])
+
+      expect(Yabeda.activejob.scheduled_total.values.values.sum).to eq(jobs_count)
     end
   end
 end
