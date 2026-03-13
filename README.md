@@ -64,6 +64,38 @@ end
 
 **Note**: Since the notifications are registered on install make sure to setup your after_event_block before calling install!
 
+## Custom Tags
+
+You can add custom tags to all metrics emitted for a specific job by defining a `yabeda_tags` instance method on your job class. This works similarly to [yabeda-sidekiq's custom tags](https://github.com/yabeda-rb/yabeda-sidekiq#custom-tags).
+
+```ruby
+class ImportJob < ActiveJob::Base
+  def perform(tenant_id, data)
+    # ...
+  end
+
+  def yabeda_tags
+    { tenant: arguments.first }
+  end
+end
+```
+
+The returned hash is merged into every metric's label set for that job (enqueued, executed, success, failed, runtime, latency).
+
+If your `yabeda_tags` method accepts arguments, the job's arguments will be forwarded to it:
+
+```ruby
+class ImportJob < ActiveJob::Base
+  def perform(tenant_id, data)
+    # ...
+  end
+
+  def yabeda_tags(tenant_id, _data)
+    { tenant: tenant_id }
+  end
+end
+```
+
 ## Metrics
 
 - Total enqueued jobs: `activejob.enqueued_total` segmented by: queue, activejob(job class name), executions(number of executions)

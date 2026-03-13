@@ -244,4 +244,25 @@ RSpec.describe Yabeda::ActiveJob, type: :integration do
       expect(Yabeda.activejob.scheduled_total.values.values.sum).to eq(jobs_count)
     end
   end
+
+  context "when job defines yabeda_tags" do
+    it "includes zero-arity custom tags in perform metrics" do
+      expect { TaggedJob.perform_later("tenant_1") }.to \
+        increment_yabeda_counter(Yabeda.activejob.success_total)
+        .with_tags(queue: "default", activejob: "TaggedJob", executions: "1", tenant: "tenant_1")
+        .by(1)
+    end
+
+    it "includes argument-forwarded custom tags in failed metrics" do
+      expect { TaggedArgsErrorJob.perform_later("tenant_1") }.to \
+        increment_yabeda_counter(Yabeda.activejob.failed_total)
+        .with_tags(
+          queue: "default",
+          activejob: "TaggedArgsErrorJob",
+          executions: "1",
+          failure_reason: "StandardError",
+          tenant: "tenant_1",
+        ).by(1).and(raise_error(StandardError))
+    end
+  end
 end
