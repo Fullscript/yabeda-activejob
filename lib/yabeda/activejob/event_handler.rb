@@ -8,11 +8,8 @@ module Yabeda
       end
 
       def handle_perform
-        labels = {
-          activejob: event.payload[:job].class.to_s,
-          queue: event.payload[:job].queue_name.to_s,
-          executions: event.payload[:job].executions.to_s,
-        }
+        labels = common_labels(event.payload[:job])
+
         if event.payload[:exception].present?
           Yabeda.activejob_failed_total.increment(
             labels.merge(failure_reason: event.payload[:exception].first.to_s),
