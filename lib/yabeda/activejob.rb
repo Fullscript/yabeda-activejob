@@ -15,6 +15,16 @@ module Yabeda
 
     mattr_accessor :after_event_block, default: proc { |_event| }
 
+    def self.custom_tags(job)
+      return {} unless job.respond_to?(:yabeda_tags)
+
+      if job.method(:yabeda_tags).arity.zero?
+        job.yabeda_tags
+      else
+        job.yabeda_tags(*job.arguments)
+      end
+    end
+
     # rubocop: disable Metrics/MethodLength, Metrics/BlockLength, Metrics/AbcSize
     def self.install!
       Yabeda.configure do

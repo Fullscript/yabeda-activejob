@@ -96,7 +96,7 @@ module Yabeda
           activejob: job.class.to_s,
           queue: job.queue_name,
           executions: job.executions.to_s,
-        )
+        ).merge(Yabeda::ActiveJob.custom_tags(job))
       end
 
       def call_after_event_block

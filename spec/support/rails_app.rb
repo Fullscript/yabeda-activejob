@@ -38,6 +38,26 @@ class ErrorLongJob < ActiveJob::Base
   end
 end
 
+class TaggedJob < ActiveJob::Base
+  def perform(tenant_id)
+    puts "Tagged job for #{tenant_id}"
+  end
+
+  def yabeda_tags
+    { tenant: arguments.first }
+  end
+end
+
+class TaggedArgsErrorJob < ActiveJob::Base
+  def perform(tenant_id)
+    raise StandardError
+  end
+
+  def yabeda_tags(tenant_id)
+    { tenant: tenant_id }
+  end
+end
+
 Rails.application = TestApplication
 
 TestApplication.initialize!
